@@ -1,0 +1,18 @@
+/* src/pages/home.css */
+/* Hover, media layout tuned for RTL + Vazir */
+.card-hover {
+  transition: transform 180ms ease, box-shadow 200ms ease;
+  border-radius: 12px;
+}
+.card-hover:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 14px 40px rgba(9,30,66,0.08);
+}
+.card-media {
+  background: linear-gradient(180deg,#fff,#fbfdff);
+  padding: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:220px;
+}
