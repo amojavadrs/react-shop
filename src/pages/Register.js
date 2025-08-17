@@ -1,32 +1,39 @@
 // src/pages/Register.js
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Container, Form, Button, Alert, Card } from "react-bootstrap";
-import { useState } from "react";
+import { Container, Card, Form, Button, Alert } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 
-function Register() {
+export default function Register() {
   const navigate = useNavigate();
-  const [serverError, setServerError] = useState("");
   const { register, handleSubmit, formState: { errors } } = useForm();
+  const [serverError, setServerError] = useState("");
 
   const onSubmit = (data) => {
     setServerError("");
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    if (users.find(u => u.email.toLowerCase() === data.email.toLowerCase())) {
+    let users = [];
+    try { users = JSON.parse(localStorage.getItem("users") || "[]"); } catch { users = []; }
+
+    if (users.find(u => (u.email || "").toLowerCase() === data.email.toLowerCase())) {
       setServerError("این ایمیل قبلاً ثبت شده است."); return;
     }
+
     users.push({ name: data.name, email: data.email, password: data.password });
     localStorage.setItem("users", JSON.stringify(users));
     localStorage.setItem("authUser", JSON.stringify({ name: data.name, email: data.email }));
+
+    // انتشار رویداد
+    window.dispatchEvent(new Event("authChanged"));
+
     navigate("/profile");
   };
 
   return (
-    <Container className="mt-4" style={{ maxWidth:480 }}>
+    <Container className="mt-4" style={{ maxWidth: 480 }}>
       <Card><Card.Body>
         <h3 className="mb-3">ثبت‌نام</h3>
         {serverError && <Alert variant="danger">{serverError}</Alert>}
-        <Form onSubmit={handleSubmit(onSubmit)}>
+        <Form onSubmit={handleSubmit(onSubmit)} noValidate>
           <Form.Group className="mb-3">
             <Form.Label>نام</Form.Label>
             <Form.Control {...register("name", { required: "نام لازم است" })} />
@@ -39,15 +46,13 @@ function Register() {
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>رمز عبور</Form.Label>
-            <Form.Control type="password" {...register("password", { required: "رمز لازم است", minLength: { value:6, message:"حداقل 6 کارکتر" } })} />
+            <Form.Control type="password" {...register("password", { required: "رمز لازم است", minLength: { value: 4, message: "حداقل 4 کاراکتر" } })} />
             {errors.password && <small className="text-danger">{errors.password.message}</small>}
           </Form.Group>
           <Button type="submit" className="w-100" variant="success">ثبت‌نام</Button>
+          <div className="mt-3 text-center">قبلاً حساب دارید؟ <Link to="/login">ورود</Link></div>
         </Form>
-        <div className="mt-3 text-center">قبلاً حساب دارید؟ <Link to="/login">ورود</Link></div>
       </Card.Body></Card>
     </Container>
   );
 }
-
-export default Register;

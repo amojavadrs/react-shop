@@ -1,9 +1,9 @@
 // src/App.js
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
-import { Container, Navbar, Nav, Badge, Form, FormControl, Button } from "react-bootstrap";
-import { FaShoppingCart, FaUser, FaSearch } from "react-icons/fa";
+import { Container, Navbar, Nav, Badge, Form } from "react-bootstrap";
+import { FaShoppingCart, FaUser } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import { useState } from "react"; 
+import { useState, useEffect } from "react";
 
 import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
@@ -11,6 +11,8 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 function AppWrapper() {
   return (
@@ -21,23 +23,68 @@ function AppWrapper() {
 }
 
 function App() {
-  const cart = useSelector((state) => state.cart.items);
-  const totalQuantity = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const cart = useSelector((state) => state.cart.items || []);
+  const totalQuantity = cart.reduce((acc, item) => acc + (item.quantity || 0), 0);
 
-  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
+  // authUser local state (keeps Navbar reactive)
+  const [authUser, setAuthUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("authUser") || "null");
+    } catch {
+      return null;
+    }
+  });
+
+  // گوش دادن به تغییرات authUser (event سفارشی) و به‌روزرسانی storage (cross-tab)
+  useEffect(() => {
+    const onAuthChanged = () => {
+      try {
+        setAuthUser(JSON.parse(localStorage.getItem("authUser") || "null"));
+      } catch {
+        setAuthUser(null);
+      }
+    };
+
+    window.addEventListener("authChanged", onAuthChanged);
+    const onStorage = (e) => {
+      if (e.key === "authUser") onAuthChanged();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("authChanged", onAuthChanged);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("authUser");
+      // انتشار رویداد تا Navbar و سایر کامپوننت‌ها بفهمن auth تغییر کرده
+      window.dispatchEvent(new Event("authChanged"));
+    } catch (e) {
+      console.error("Logout error:", e);
+    }
+    navigate("/login");
+  };
+
+  // Search state (البته input داخل Navbar فعلاً غیر فعال/کامنت است در نسخه‌ات — اینجا آماده است)
+  const [searchTerm, setSearchTerm] = useState("");
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim() !== "") {
-      navigate(`/?search=${encodeURIComponent(searchTerm)}`);
+      navigate(`/?search=${encodeURIComponent(searchTerm.trim())}`);
       setSearchTerm("");
+    } else {
+      navigate("/");
     }
   };
 
   return (
     <>
-      {/* ✅ Navbar */}
+      {/* Navbar */}
       <Navbar expand="lg" fixed="top" className="app-navbar">
         <Container>
           <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
@@ -52,26 +99,40 @@ function App() {
               <Nav.Link as={Link} to="/checkout">تکمیل خرید</Nav.Link>
             </Nav>
 
-            {/* ✅ Search box */}
-            <Form className="d-flex me-3" onSubmit={handleSearch}>
-              {/* <FormControl
+            {/* اگر خواستی سرچ فعال باشه، از این فرم استفاده کن (در نسخه فعلی input کامنت شده بود) */}
+            <Form className="d-flex me-3" onSubmit={handleSearch} style={{ alignItems: "center" }}>
+              {/* مثال فعال کردن سرچ:
+              <Form.Control
                 type="search"
                 placeholder="جستجو..."
                 className="me-2 text-end"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-              /> */}
-              {/* <Button type="submit" variant="outline-light">
-                <FaSearch />
-              </Button> */}
+              />
+              */}
             </Form>
 
-            {/* ✅ User + Cart */}
+            {/* User + Cart */}
             <Nav>
-              <Nav.Link as={Link} to="/profile" className="user-toggle">
-                <FaUser /> حساب کاربری
-              </Nav.Link>
-              <Nav.Link as={Link} to="/cart" className="cart-link">
+              {authUser ? (
+                <>
+                  <Nav.Link className="d-flex align-items-center" as={Link} to="/profile">
+                    <FaUser /> <span style={{ marginInlineStart: 8 }}>{authUser.name || authUser.email}</span>
+                  </Nav.Link>
+                  <Nav.Link onClick={handleLogout} style={{ cursor: "pointer", color: "#dc3545", marginInlineStart: 8 }}>
+                    خروج
+                  </Nav.Link>
+                </>
+              ) : (
+                <>
+                  <Nav.Link as={Link} to="/login" className="d-flex align-items-center">
+                    <FaUser /> ورود
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/register">ثبت‌نام</Nav.Link>
+                </>
+              )}
+
+              <Nav.Link as={Link} to="/cart" className="cart-link d-flex align-items-center" style={{ marginInlineStart: 12 }}>
                 <FaShoppingCart size={18} />
                 {totalQuantity > 0 && (
                   <Badge bg="danger" className="ms-1">
@@ -84,8 +145,8 @@ function App() {
         </Container>
       </Navbar>
 
-      {/* ✅ Main pages */}
-      <Container className="main-container">
+      {/* Main pages */}
+      <Container className="main-container" style={{ marginTop: 16 }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetail />} />
@@ -93,53 +154,33 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </Container>
 
-      {/* ✅ Footer */}
-<footer className="app-footer text-center">
-  <Container>
-    <p className="mb-2">© ۲۰۲۵ فروشگاه آنلاین - همه حقوق محفوظ است</p>
+      {/* Footer (kept as in your file) */}
+      <footer className="app-footer text-center">
+        <Container>
+          <p className="mb-2">© ۲۰۲۵ فروشگاه آنلاین - همه حقوق محفوظ است</p>
 
-    <div className="d-flex justify-content-center gap-4 mb-2">
-      {/* Instagram */}
-      <a
-        href="https://instagram.com/yourusername"
-        target="_blank"
-        rel="noreferrer"
-        className="social-icon"
-        title="اینستاگرام"
-      >
-        <i className="bi bi-instagram fs-3"></i>
-      </a>
+          <div className="d-flex justify-content-center gap-4 mb-2">
+            <a href="https://instagram.com/yourusername" target="_blank" rel="noreferrer" className="social-icon" title="اینستاگرام">
+              <i className="bi bi-instagram fs-3"></i>
+            </a>
 
-      {/* Telegram */}
-      <a
-        href="https://t.me/yourusername"
-        target="_blank"
-        rel="noreferrer"
-        className="social-icon telegram"
-        title="تلگرام"
-      >
-        <i className="bi bi-telegram fs-3"></i>
-      </a>
+            <a href="https://t.me/yourusername" target="_blank" rel="noreferrer" className="social-icon telegram" title="تلگرام">
+              <i className="bi bi-telegram fs-3"></i>
+            </a>
 
-      {/* GitHub */}
-      <a
-        href="https://github.com/yourusername"
-        target="_blank"
-        rel="noreferrer"
-        className="social-icon github"
-        title="گیت‌هاب"
-      >
-        <i className="bi bi-github fs-3"></i>
-      </a>
-    </div>
+            <a href="https://github.com/yourusername" target="_blank" rel="noreferrer" className="social-icon github" title="گیت‌هاب">
+              <i className="bi bi-github fs-3"></i>
+            </a>
+          </div>
 
-    <small>پروژه تحویلی: فروشگاه آنلاین محمد جواد رییسی </small>
-  </Container>
-</footer>
-
+          <small>پروژه تحویلی: فروشگاه آنلاین محمد جواد رییسی </small>
+        </Container>
+      </footer>
     </>
   );
 }
