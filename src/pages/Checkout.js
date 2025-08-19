@@ -1,4 +1,3 @@
-// src/pages/Checkout.js
 import React, { useEffect, useState } from "react";
 import { Container, Form, Button, Alert, Table } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";

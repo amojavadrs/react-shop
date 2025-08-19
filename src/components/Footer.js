@@ -1,4 +1,3 @@
-// src/components/Footer.js
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { FaInstagram, FaTelegramPlane, FaEnvelope } from "react-icons/fa";

@@ -1,4 +1,3 @@
-// src/pages/Login.js
 import React, { useState } from "react";
 import { Container, Card, Form, Button, Alert } from "react-bootstrap";
 import { useForm } from "react-hook-form";
@@ -20,14 +19,12 @@ export default function Login() {
     const authObj = { email: found.email, name: found.name || "" };
     try {
       localStorage.setItem("authUser", JSON.stringify(authObj));
-      // انتشار رویداد تا Navbar و بقیه آپدیت شوند
       window.dispatchEvent(new Event("authChanged"));
     } catch (e) {
       setServerError("خطا در ذخیره‌سازی محلی.");
       return;
     }
 
-    // هدایت
     window.location.href = "/profile";
   };
 

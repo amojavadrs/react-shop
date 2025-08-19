@@ -1,4 +1,3 @@
-// src/pages/Home.js
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, Button, Spinner, Form, InputGroup, Toast, ToastContainer, Pagination } from "react-bootstrap";

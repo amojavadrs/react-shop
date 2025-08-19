@@ -1,4 +1,3 @@
-// src/pages/Cart.js
 import { useSelector, useDispatch } from "react-redux";
 import { Container, Table, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";

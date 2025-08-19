@@ -41,7 +41,6 @@ function Contact() {
             {...register("email", {
               required: "ایمیل الزامی است",
               pattern: {
-                // الگوی استاندارد ایمیل ساده
                 value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                 message: "ایمیل معتبر وارد کنید",
               },

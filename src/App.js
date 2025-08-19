@@ -1,4 +1,3 @@
-// src/App.js
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { Container, Navbar, Nav, Badge, Form } from "react-bootstrap";
 import { FaShoppingCart, FaUser } from "react-icons/fa";
@@ -28,7 +27,7 @@ function App() {
 
   const navigate = useNavigate();
 
-  // authUser local state (keeps Navbar reactive)
+
   const [authUser, setAuthUser] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("authUser") || "null");
@@ -37,7 +36,6 @@ function App() {
     }
   });
 
-  // گوش دادن به تغییرات authUser (event سفارشی) و به‌روزرسانی storage (cross-tab)
   useEffect(() => {
     const onAuthChanged = () => {
       try {
@@ -62,7 +60,7 @@ function App() {
   const handleLogout = () => {
     try {
       localStorage.removeItem("authUser");
-      // انتشار رویداد تا Navbar و سایر کامپوننت‌ها بفهمن auth تغییر کرده
+
       window.dispatchEvent(new Event("authChanged"));
     } catch (e) {
       console.error("Logout error:", e);
@@ -70,7 +68,7 @@ function App() {
     navigate("/login");
   };
 
-  // Search state (البته input داخل Navbar فعلاً غیر فعال/کامنت است در نسخه‌ات — اینجا آماده است)
+
   const [searchTerm, setSearchTerm] = useState("");
   const handleSearch = (e) => {
     e.preventDefault();
@@ -84,7 +82,7 @@ function App() {
 
   return (
     <>
-      {/* Navbar */}
+   
       <Navbar expand="lg" fixed="top" className="app-navbar">
         <Container>
           <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
@@ -99,20 +97,11 @@ function App() {
               <Nav.Link as={Link} to="/checkout">تکمیل خرید</Nav.Link>
             </Nav>
 
-            {/* اگر خواستی سرچ فعال باشه، از این فرم استفاده کن (در نسخه فعلی input کامنت شده بود) */}
             <Form className="d-flex me-3" onSubmit={handleSearch} style={{ alignItems: "center" }}>
-              {/* مثال فعال کردن سرچ:
-              <Form.Control
-                type="search"
-                placeholder="جستجو..."
-                className="me-2 text-end"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              */}
+    
             </Form>
 
-            {/* User + Cart */}
+        
             <Nav>
               {authUser ? (
                 <>
@@ -145,7 +134,7 @@ function App() {
         </Container>
       </Navbar>
 
-      {/* Main pages */}
+
       <Container className="main-container" style={{ marginTop: 16 }}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -159,7 +148,6 @@ function App() {
         </Routes>
       </Container>
 
-      {/* Footer (kept as in your file) */}
       <footer className="app-footer text-center">
         <Container>
           <p className="mb-2">© ۲۰۲۵ فروشگاه آنلاین - همه حقوق محفوظ است</p>

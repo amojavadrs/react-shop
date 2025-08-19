@@ -1,4 +1,3 @@
-// src/utils/currency.js
 export const TOMAN_RATE = 4200; // 1 USD = 4200 تومان
 
 export function toToman(usd) {

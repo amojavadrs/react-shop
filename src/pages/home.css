@@ -1,5 +1,3 @@
-/* src/pages/home.css */
-/* Hover, media layout tuned for RTL + Vazir */
 .card-hover {
   transition: transform 180ms ease, box-shadow 200ms ease;
   border-radius: 12px;
